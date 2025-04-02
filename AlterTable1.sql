@@ -1,13 +1,17 @@
-use master
+use master;
+alter database BDAlterTable set single_user with rollback immediate;
+drop database if exists BDAlterTable;
 go
---------------------------------------------------------------------------------------------
-if DB_ID('BDAlterTable') is not null
-   drop database BDAlterTable
+
+create database BDAlterTable;
 go
-create database BDAlterTable
+
+use BDAlterTable;
 go
---------------------------------------------------------------------------------------------
-use BDAlterTable
+
+if object_id('INSCRIPCIONES', 'U') is not null drop table INSCRIPCIONES;
+if object_id('CURSOS', 'U') is not null drop table CURSOS;
+if object_id('ESTUDIANTES', 'U') is not null drop table ESTUDIANTES;
 go
 
 CREATE TABLE ESTUDIANTES (
@@ -23,7 +27,7 @@ CREATE TABLE CURSOS (
     ID_CURSO INT PRIMARY KEY,
     NOMBRE_CURSO VARCHAR(100),
     DESCRIPCION VARCHAR(255),
-    DURACION INT, -- Duración en horas
+    DURACION DECIMAL(5,1), -- Corrección de tipo de dato
     PRECIO DECIMAL(10, 2)
 );
 go
@@ -32,10 +36,25 @@ CREATE TABLE INSCRIPCIONES (
     ID_INSCRIPCION INT PRIMARY KEY,
     ID_ESTUDIANTE INT,
     ID_CURSO INT,
-    FECHA_INSCRIPCION DATE,
+    FECHA_INSCRIPCION DATE NOT NULL, -- Corrección para NOT NULL
     CALIFICACION INT,
     CONSTRAINT FK_ESTUDIANTE FOREIGN KEY (ID_ESTUDIANTE) REFERENCES ESTUDIANTES(ID_ESTUDIANTE),
     CONSTRAINT FK_CURSO FOREIGN KEY (ID_CURSO) REFERENCES CURSOS(ID_CURSO),
     CONSTRAINT UC_ESTUDIANTE_CURSO UNIQUE (ID_ESTUDIANTE, ID_CURSO)
 );
+go
+
+ALTER TABLE ESTUDIANTES ADD DIRECCION VARCHAR(200);
+go
+
+ALTER TABLE CURSOS ALTER COLUMN DURACION DECIMAL(5,1);
+go
+
+ALTER TABLE INSCRIPCIONES ALTER COLUMN FECHA_INSCRIPCION DATE NOT NULL;
+go
+
+ALTER TABLE CURSOS ADD CONSTRAINT UQ_NOMBRE_CURSO UNIQUE (NOMBRE_CURSO);
+go
+
+ALTER TABLE ESTUDIANTES ADD CONSTRAINT CK_FECHA_NACIMIENTO CHECK (FECHA_NACIMIENTO <= DATEADD(YEAR, -16, GETDATE()));
 go
